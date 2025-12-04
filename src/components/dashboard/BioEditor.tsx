@@ -8,9 +8,9 @@ export function BioEditor() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
-  const [bio, setBio] = useState(`As the CEO of ValorTrust Solution & Consultant Nig. Ltd, I bring a unique blend of entrepreneurial vision and technical expertise in Quantity Surveying. Currently pursuing my professional education, I am committed to delivering exceptional value in cost management, project consulting, and construction economics.
+  const [bio, setBio] = useState(`I am Mustapha Sani Jibril — CEO of ValorTrust Solution & Consultant Nig. Ltd and a Quantity Surveying student at Bayero University Kano. I combine engineering discipline and commercial thinking to deliver cost-conscious construction solutions and practical digital strategies.
 
-My journey combines academic rigor with practical business leadership, enabling me to understand both the technical and strategic aspects of project delivery. I believe in precision, integrity, and innovative solutions that create lasting value for clients and stakeholders.`);
+My focus areas include Data Analytics, Marketing Strategy, Small Business Consulting, Product Strategy, and Marketing Campaigns. I help businesses optimize costs, scale digital presence, and translate technical projects into measurable impact.`);
 
   // Auto-save functionality
   const autoSave = useCallback(async () => {

@@ -9,7 +9,11 @@ import {
   Palette, 
   Globe, 
   Box,
-  FolderOpen
+  FolderOpen,
+  TrendingUp,
+  Megaphone,
+  Briefcase,
+  Target
 } from "lucide-react";
 
 export interface Skill {
@@ -31,6 +35,9 @@ const categoryIcons: Record<string, React.ElementType> = {
   "Design": Palette,
   "Web": Globe,
   "3D": Box,
+  "Marketing": Megaphone,
+  "Small Business Consulting": Briefcase,
+  "Product Strategy": Target,
 };
 
 const categoryColors: Record<string, string> = {
@@ -41,6 +48,9 @@ const categoryColors: Record<string, string> = {
   "Design": "bg-pink-500/10 text-pink-600",
   "Web": "bg-cyan-500/10 text-cyan-600",
   "3D": "bg-amber-500/10 text-amber-600",
+  "Marketing": "bg-rose-500/10 text-rose-600",
+  "Small Business Consulting": "bg-teal-500/10 text-teal-600",
+  "Product Strategy": "bg-indigo-500/10 text-indigo-600",
 };
 
 export function SkillsSection({ skills = [] }: SkillsSectionProps) {
