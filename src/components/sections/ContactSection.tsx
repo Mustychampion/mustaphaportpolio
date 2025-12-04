@@ -44,9 +44,9 @@ export function ContactSection() {
   };
 
   const contactInfo = [
-    { icon: Mail, label: "Email", value: "contact@mustaphasani.com" },
-    { icon: Phone, label: "Phone", value: "+234 XXX XXX XXXX" },
-    { icon: MapPin, label: "Location", value: "Nigeria" },
+    { icon: Mail, label: "Email", value: "mustaphasanijibrinjikanjaji@gmail.com" },
+    { icon: Phone, label: "WhatsApp", value: "09095569295, 08039535043, 09076610353" },
+    { icon: MapPin, label: "Address", value: "No. 125 ZBB qtr, KMC Kano, Nigeria" },
   ];
 
   return (

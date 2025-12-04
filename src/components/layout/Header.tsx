@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -80,11 +79,6 @@ export function Header() {
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
               </button>
             ))}
-            <Link to="/dashboard">
-              <Button variant="default" size="sm">
-                Dashboard
-              </Button>
-            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -117,11 +111,6 @@ export function Header() {
                   {link.label}
                 </button>
               ))}
-              <Link to="/dashboard" className="mt-2">
-                <Button variant="default" className="w-full">
-                  Dashboard
-                </Button>
-              </Link>
             </div>
           </motion.div>
         )}

@@ -75,17 +75,17 @@ export function Footer() {
           <div>
             <h4 className="font-display font-semibold text-lg mb-4">Contact</h4>
             <ul className="space-y-3">
-              <li className="flex items-center gap-2 text-primary-foreground/80">
-                <Mail size={16} />
-                <span className="text-sm">contact@mustaphasani.com</span>
+              <li className="flex items-start gap-2 text-primary-foreground/80">
+                <Mail size={16} className="mt-0.5 flex-shrink-0" />
+                <span className="text-sm break-all">mustaphasanijibrinjikanjaji@gmail.com</span>
               </li>
-              <li className="flex items-center gap-2 text-primary-foreground/80">
-                <Phone size={16} />
-                <span className="text-sm">+234 XXX XXX XXXX</span>
+              <li className="flex items-start gap-2 text-primary-foreground/80">
+                <Phone size={16} className="mt-0.5 flex-shrink-0" />
+                <span className="text-sm">09095569295</span>
               </li>
-              <li className="flex items-center gap-2 text-primary-foreground/80">
-                <MapPin size={16} />
-                <span className="text-sm">Nigeria</span>
+              <li className="flex items-start gap-2 text-primary-foreground/80">
+                <MapPin size={16} className="mt-0.5 flex-shrink-0" />
+                <span className="text-sm">No. 125 ZBB qtr, KMC Kano, Nigeria</span>
               </li>
             </ul>
           </div>
