@@ -10,31 +10,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
-
-interface Skill {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-}
+import { useSkills, useCreateSkill, useUpdateSkill, useDeleteSkill } from "@/hooks/useSkills";
 
 const CATEGORIES = [
   "QS",
   "Digital",
+  "Data & Analysis",
   "Analysis",
   "ICT Leadership",
   "Design",
   "Web",
   "3D",
+  "Marketing",
+  "Consulting",
+  "Strategy",
 ];
 
 export function SkillsManager() {
-  const { toast } = useToast();
-  const [skills, setSkills] = useState<Skill[]>([]);
+  const { data: skills = [], isLoading: isLoadingSkills } = useSkills();
+  const createSkill = useCreateSkill();
+  const updateSkill = useUpdateSkill();
+  const deleteSkill = useDeleteSkill();
+  
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -47,61 +46,43 @@ export function SkillsManager() {
     setEditingId(null);
   };
 
-  const handleAdd = async () => {
-    if (!formData.name || !formData.category) {
-      toast({
-        title: "Missing Fields",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    const newSkill: Skill = {
-      id: Date.now().toString(),
-      ...formData,
-    };
-
-    setSkills(prev => [...prev, newSkill]);
-    toast({ title: "Skill Added", description: `${formData.name} has been added.` });
-    resetForm();
-    setIsLoading(false);
+  const handleAdd = () => {
+    if (!formData.name || !formData.category) return;
+    
+    createSkill.mutate({
+      name: formData.name,
+      description: formData.description,
+      category: formData.category,
+      display_order: skills.length,
+    }, {
+      onSuccess: () => resetForm()
+    });
   };
 
-  const handleEdit = (skill: Skill) => {
+  const handleEdit = (skill: typeof skills[0]) => {
     setEditingId(skill.id);
     setFormData({
       name: skill.name,
-      description: skill.description,
+      description: skill.description || '',
       category: skill.category,
     });
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = () => {
     if (!editingId) return;
-
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    setSkills(prev =>
-      prev.map(s =>
-        s.id === editingId
-          ? { ...s, ...formData }
-          : s
-      )
-    );
-
-    toast({ title: "Skill Updated", description: "Changes have been saved." });
-    resetForm();
-    setIsLoading(false);
+    
+    updateSkill.mutate({
+      id: editingId,
+      name: formData.name,
+      description: formData.description,
+      category: formData.category,
+    }, {
+      onSuccess: () => resetForm()
+    });
   };
 
-  const handleDelete = async (id: string) => {
-    setSkills(prev => prev.filter(s => s.id !== id));
-    toast({ title: "Skill Deleted", description: "The skill has been removed." });
+  const handleDelete = (id: string) => {
+    deleteSkill.mutate(id);
   };
 
   // Group skills by category
@@ -109,7 +90,17 @@ export function SkillsManager() {
     if (!acc[skill.category]) acc[skill.category] = [];
     acc[skill.category].push(skill);
     return acc;
-  }, {} as Record<string, Skill[]>);
+  }, {} as Record<string, typeof skills>);
+
+  const isLoading = createSkill.isPending || updateSkill.isPending;
+
+  if (isLoadingSkills) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -163,7 +154,7 @@ export function SkillsManager() {
           <div className="flex gap-2">
             <Button
               onClick={editingId ? handleUpdate : handleAdd}
-              disabled={isLoading}
+              disabled={isLoading || !formData.name || !formData.category}
             >
               {isLoading ? (
                 <Loader2 size={16} className="animate-spin" />
@@ -215,6 +206,7 @@ export function SkillsManager() {
                         <button
                           onClick={() => handleDelete(skill.id)}
                           className="p-1 text-muted-foreground hover:text-destructive"
+                          disabled={deleteSkill.isPending}
                         >
                           <Trash2 size={14} />
                         </button>
