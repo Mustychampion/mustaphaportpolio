@@ -31,26 +31,32 @@ const categoryIcons: Record<string, React.ElementType> = {
   "QS": Calculator,
   "Digital": Monitor,
   "Analysis": BarChart3,
+  "Data & Analysis": TrendingUp,
   "ICT Leadership": Users,
   "Design": Palette,
   "Web": Globe,
   "3D": Box,
   "Marketing": Megaphone,
   "Small Business Consulting": Briefcase,
+  "Consulting": Briefcase,
   "Product Strategy": Target,
+  "Strategy": Target,
 };
 
 const categoryColors: Record<string, string> = {
   "QS": "bg-emerald-500/10 text-emerald-600",
   "Digital": "bg-blue-500/10 text-blue-600",
   "Analysis": "bg-purple-500/10 text-purple-600",
+  "Data & Analysis": "bg-violet-500/10 text-violet-600",
   "ICT Leadership": "bg-orange-500/10 text-orange-600",
   "Design": "bg-pink-500/10 text-pink-600",
   "Web": "bg-cyan-500/10 text-cyan-600",
   "3D": "bg-amber-500/10 text-amber-600",
   "Marketing": "bg-rose-500/10 text-rose-600",
   "Small Business Consulting": "bg-teal-500/10 text-teal-600",
+  "Consulting": "bg-teal-500/10 text-teal-600",
   "Product Strategy": "bg-indigo-500/10 text-indigo-600",
+  "Strategy": "bg-indigo-500/10 text-indigo-600",
 };
 
 export function SkillsSection({ skills = [] }: SkillsSectionProps) {

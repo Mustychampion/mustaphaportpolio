@@ -1,66 +1,40 @@
 import { useState } from "react";
-import { Mail, Check, Trash2, Reply, Clock, User } from "lucide-react";
+import { Mail, Trash2, Reply, Clock, User, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-interface Message {
-  id: string;
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-  date: string;
-  isRead: boolean;
-}
+import { useContacts, useMarkContactRead, useDeleteContact } from "@/hooks/useContacts";
 
 export function ContactInbox() {
-  const [messages, setMessages] = useState<Message[]>([
-    // Sample messages for demo
-    {
-      id: "1",
-      name: "John Doe",
-      email: "john@example.com",
-      subject: "Consulting Inquiry",
-      message: "Hello Mustapha, I'm interested in your quantity surveying services for an upcoming commercial project. Could we schedule a call to discuss the details?",
-      date: "2024-01-15",
-      isRead: false,
-    },
-    {
-      id: "2",
-      name: "Jane Smith",
-      email: "jane@company.com",
-      subject: "Internship Opportunity",
-      message: "We have an internship position available at our construction firm. Based on your profile, we think you'd be a great fit. Please let us know if you're interested.",
-      date: "2024-01-14",
-      isRead: true,
-    },
-  ]);
+  const { data: messages = [], isLoading } = useContacts();
+  const markAsRead = useMarkContactRead();
+  const deleteContact = useDeleteContact();
+  
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selectedMessage = messages.find(m => m.id === selectedId);
 
-  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const handleSelectMessage = (message: typeof messages[0]) => {
+    setSelectedId(message.id);
+    if (!message.is_read) {
+      markAsRead.mutate({ id: message.id, is_read: true });
+    }
+  };
 
-  const markAsRead = (id: string) => {
-    setMessages(prev =>
-      prev.map(m =>
-        m.id === id ? { ...m, isRead: true } : m
-      )
+  const handleDelete = (id: string) => {
+    deleteContact.mutate(id);
+    if (selectedId === id) {
+      setSelectedId(null);
+    }
+  };
+
+  const unreadCount = messages.filter(m => !m.is_read).length;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
-  };
-
-  const deleteMessage = (id: string) => {
-    setMessages(prev => prev.filter(m => m.id !== id));
-    if (selectedMessage?.id === id) {
-      setSelectedMessage(null);
-    }
-  };
-
-  const handleSelectMessage = (message: Message) => {
-    setSelectedMessage(message);
-    if (!message.isRead) {
-      markAsRead(message.id);
-    }
-  };
-
-  const unreadCount = messages.filter(m => !m.isRead).length;
+  }
 
   return (
     <div className="grid lg:grid-cols-3 gap-6 h-[calc(100vh-12rem)]">
@@ -84,30 +58,30 @@ export function ContactInbox() {
                 onClick={() => handleSelectMessage(message)}
                 className={cn(
                   "w-full p-4 text-left border-b border-border hover:bg-muted/50 transition-colors",
-                  selectedMessage?.id === message.id && "bg-muted",
-                  !message.isRead && "bg-primary/5"
+                  selectedId === message.id && "bg-muted",
+                  !message.is_read && "bg-primary/5"
                 )}
               >
                 <div className="flex items-start gap-3">
                   <div className={cn(
                     "w-2 h-2 rounded-full mt-2 flex-shrink-0",
-                    message.isRead ? "bg-transparent" : "bg-primary"
+                    message.is_read ? "bg-transparent" : "bg-primary"
                   )} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <p className={cn(
                         "text-sm truncate",
-                        message.isRead ? "text-foreground" : "font-semibold text-foreground"
+                        message.is_read ? "text-foreground" : "font-semibold text-foreground"
                       )}>
                         {message.name}
                       </p>
                       <span className="text-xs text-muted-foreground flex-shrink-0">
-                        {new Date(message.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        {new Date(message.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </span>
                     </div>
                     <p className={cn(
                       "text-sm truncate",
-                      message.isRead ? "text-muted-foreground" : "text-foreground"
+                      message.is_read ? "text-muted-foreground" : "text-foreground"
                     )}>
                       {message.subject}
                     </p>
@@ -135,15 +109,20 @@ export function ContactInbox() {
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-foreground">{selectedMessage.subject}</h3>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => window.open(`mailto:${selectedMessage.email}?subject=Re: ${selectedMessage.subject}`)}
+                  >
                     <Reply size={14} />
                     Reply
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => deleteMessage(selectedMessage.id)}
+                    onClick={() => handleDelete(selectedMessage.id)}
                     className="text-muted-foreground hover:text-destructive"
+                    disabled={deleteContact.isPending}
                   >
                     <Trash2 size={14} />
                   </Button>
@@ -161,7 +140,7 @@ export function ContactInbox() {
                 </div>
                 <div className="ml-auto flex items-center gap-1 text-muted-foreground text-sm">
                   <Clock size={14} />
-                  {new Date(selectedMessage.date).toLocaleDateString('en-US', {
+                  {new Date(selectedMessage.created_at).toLocaleDateString('en-US', {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',

@@ -2,45 +2,75 @@ import { useState, useEffect, useCallback } from "react";
 import { Save, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { useBio, useUpdateBio } from "@/hooks/useBio";
 
 export function BioEditor() {
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const { data: bioData, isLoading: isLoadingBio } = useBio();
+  const updateBio = useUpdateBio();
+  
   const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
-  const [bio, setBio] = useState(`I am Mustapha Sani Jibril — CEO of ValorTrust Solution & Consultant Nig. Ltd and a Quantity Surveying student at Bayero University Kano. I combine engineering discipline and commercial thinking to deliver cost-conscious construction solutions and practical digital strategies.
+  const [localBio, setLocalBio] = useState("");
+  const [hasChanges, setHasChanges] = useState(false);
 
-My focus areas include Data Analytics, Marketing Strategy, Small Business Consulting, Product Strategy, and Marketing Campaigns. I help businesses optimize costs, scale digital presence, and translate technical projects into measurable impact.`);
+  // Initialize local bio when data loads
+  useEffect(() => {
+    if (bioData?.content && !hasChanges) {
+      setLocalBio(bioData.content);
+    }
+  }, [bioData, hasChanges]);
 
   // Auto-save functionality
   const autoSave = useCallback(async () => {
+    if (!bioData?.id || !hasChanges) return;
+    
     setAutoSaveStatus("saving");
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 800));
-    setAutoSaveStatus("saved");
-    setTimeout(() => setAutoSaveStatus("idle"), 2000);
-  }, []);
+    updateBio.mutate(
+      { id: bioData.id, content: localBio },
+      {
+        onSuccess: () => {
+          setAutoSaveStatus("saved");
+          setHasChanges(false);
+          setTimeout(() => setAutoSaveStatus("idle"), 2000);
+        },
+        onError: () => {
+          setAutoSaveStatus("idle");
+        }
+      }
+    );
+  }, [bioData?.id, localBio, hasChanges, updateBio]);
 
   // Debounced auto-save
   useEffect(() => {
+    if (!hasChanges) return;
+    
     const timer = setTimeout(() => {
-      if (bio.trim()) {
+      if (localBio.trim()) {
         autoSave();
       }
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [bio, autoSave]);
+  }, [localBio, hasChanges, autoSave]);
 
-  const handleManualSave = async () => {
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    toast({
-      title: "Bio Saved",
-      description: "Your professional statement has been updated.",
-    });
-    setIsLoading(false);
+  const handleBioChange = (value: string) => {
+    setLocalBio(value);
+    setHasChanges(true);
   };
+
+  const handleManualSave = () => {
+    if (!bioData?.id) return;
+    updateBio.mutate({ id: bioData.id, content: localBio }, {
+      onSuccess: () => setHasChanges(false)
+    });
+  };
+
+  if (isLoadingBio) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl">
@@ -74,15 +104,15 @@ My focus areas include Data Analytics, Marketing Strategy, Small Business Consul
 
         <div className="space-y-4">
           <Textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
+            value={localBio}
+            onChange={(e) => handleBioChange(e.target.value)}
             placeholder="Write your professional summary here..."
             rows={12}
             className="resize-none text-base leading-relaxed"
           />
           
           <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>{bio.length} characters</span>
+            <span>{localBio.length} characters</span>
             <span>Changes auto-save after 2 seconds</span>
           </div>
         </div>
@@ -100,8 +130,8 @@ My focus areas include Data Analytics, Marketing Strategy, Small Business Consul
 
         {/* Manual Save */}
         <div className="mt-8 pt-6 border-t border-border flex justify-end">
-          <Button onClick={handleManualSave} disabled={isLoading}>
-            {isLoading ? (
+          <Button onClick={handleManualSave} disabled={updateBio.isPending || !hasChanges}>
+            {updateBio.isPending ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
                 Saving...

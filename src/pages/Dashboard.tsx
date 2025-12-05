@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   User,
   FileText,
@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 // Dashboard section components
 import { ProfileManager } from "@/components/dashboard/ProfileManager";
@@ -53,6 +55,15 @@ const menuItems: { id: DashboardSection; label: string; icon: React.ElementType 
 export default function Dashboard() {
   const [activeSection, setActiveSection] = useState<DashboardSection>("profile");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { signOut, user } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    await signOut();
+    toast({ title: "Logged out successfully" });
+    navigate('/admin');
+  };
 
   const renderSection = () => {
     switch (activeSection) {
@@ -143,7 +154,12 @@ export default function Dashboard() {
               View Website
             </Button>
           </Link>
-          <Button variant="ghost" className="w-full justify-start text-muted-foreground" size="sm">
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start text-muted-foreground" 
+            size="sm"
+            onClick={handleLogout}
+          >
             <LogOut size={16} />
             Logout
           </Button>

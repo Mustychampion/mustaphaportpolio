@@ -5,35 +5,53 @@ import { Send, Mail, Phone, MapPin, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { useCreateContact } from "@/hooks/useContacts";
+import { z } from "zod";
+
+const contactSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100),
+  email: z.string().trim().email("Invalid email").max(255),
+  subject: z.string().trim().min(1, "Subject is required").max(200),
+  message: z.string().trim().min(1, "Message is required").max(2000),
+});
 
 export function ContactSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const { toast } = useToast();
+  const createContact = useCreateContact();
   
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     subject: "",
     message: "",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    setErrors({});
     
-    // Simulate submission - replace with actual API call when backend is connected
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    const result = contactSchema.safeParse(formData);
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach(err => {
+        if (err.path[0]) fieldErrors[err.path[0] as string] = err.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
     
-    toast({
-      title: "Message Sent!",
-      description: "Thank you for reaching out. I'll get back to you soon.",
+    createContact.mutate({
+      name: result.data.name,
+      email: result.data.email,
+      subject: result.data.subject,
+      message: result.data.message,
+    }, {
+      onSuccess: () => {
+        setFormData({ name: "", email: "", subject: "", message: "" });
+      }
     });
-    
-    setFormData({ name: "", email: "", subject: "", message: "" });
-    setIsSubmitting(false);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -141,8 +159,9 @@ export function ContactSection() {
                     onChange={handleChange}
                     placeholder="Your name"
                     required
-                    className="h-12"
+                    className={`h-12 ${errors.name ? 'border-destructive' : ''}`}
                   />
+                  {errors.name && <p className="text-sm text-destructive mt-1">{errors.name}</p>}
                 </div>
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
@@ -156,8 +175,9 @@ export function ContactSection() {
                     onChange={handleChange}
                     placeholder="your@email.com"
                     required
-                    className="h-12"
+                    className={`h-12 ${errors.email ? 'border-destructive' : ''}`}
                   />
+                  {errors.email && <p className="text-sm text-destructive mt-1">{errors.email}</p>}
                 </div>
               </div>
               
@@ -196,9 +216,9 @@ export function ContactSection() {
                 type="submit" 
                 size="lg" 
                 className="w-full sm:w-auto"
-                disabled={isSubmitting}
+                disabled={createContact.isPending}
               >
-                {isSubmitting ? (
+                {createContact.isPending ? (
                   <>
                     <Loader2 size={18} className="animate-spin" />
                     Sending...
